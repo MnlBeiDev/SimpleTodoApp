@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Drawing;
+using AutoMapper;
 using Todo_App.Application.Common.Mappings;
 using Todo_App.Domain.Entities;
 
@@ -18,9 +19,11 @@ public class TodoItemDto : IMapFrom<TodoItem>
 
     public string? Note { get; set; }
 
-    public void Mapping(Profile profile)
-    {
-        profile.CreateMap<TodoItem, TodoItemDto>()
-            .ForMember(d => d.Priority, opt => opt.MapFrom(s => (int)s.Priority));
-    }
+    public string Colour { get; set; }
+    //public void Mapping(Profile profile)
+    //{
+    //    profile.CreateMap<TodoItem, TodoItemDto>()
+    //        .ForMember(d => d.Priority, opt => opt.MapFrom(s => (int)s.Priority))
+    //        .ForMember(d=> d.Colour , opt => opt.MapFrom(s=> s.Colour));
+    //}
 }
