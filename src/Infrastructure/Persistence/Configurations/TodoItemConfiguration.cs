@@ -14,5 +14,7 @@ public class TodoItemConfiguration : IEntityTypeConfiguration<TodoItem>
 
         builder.Property(t => t.Note)
             .HasMaxLength(2);
+
+        builder.Property(b => b.Tags);
     }
 }

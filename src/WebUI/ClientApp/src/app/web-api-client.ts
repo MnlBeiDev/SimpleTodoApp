@@ -12,6 +12,7 @@ import { mergeMap as _observableMergeMap, catchError as _observableCatch } from 
 import { Observable, throwError as _observableThrow, of as _observableOf } from 'rxjs';
 import { Injectable, Inject, Optional, InjectionToken } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse, HttpResponseBase } from '@angular/common/http';
+import { TagListModel } from './common/tag-list/tag-list.model';
 
 export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
 
@@ -854,7 +855,7 @@ export class UpdateTodoItemDetailCommand implements IUpdateTodoItemDetailCommand
     listId?: number;
     priority?: PriorityLevel;
     note?: string | undefined;
-
+    tags? : string;
     constructor(data?: IUpdateTodoItemDetailCommand) {
         if (data) {
             for (var property in data) {
@@ -870,6 +871,7 @@ export class UpdateTodoItemDetailCommand implements IUpdateTodoItemDetailCommand
             this.listId = _data["listId"];
             this.priority = _data["priority"];
             this.note = _data["note"];
+            this.tags = _data["tags"]; 
         }
     }
 
@@ -886,6 +888,7 @@ export class UpdateTodoItemDetailCommand implements IUpdateTodoItemDetailCommand
         data["listId"] = this.listId;
         data["priority"] = this.priority;
         data["note"] = this.note;
+        data["tags"] = this.tags;
         return data;
     }
 }
@@ -895,6 +898,7 @@ export interface IUpdateTodoItemDetailCommand {
     listId?: number;
     priority?: PriorityLevel;
     note?: string | undefined;
+    tags?: string;
 }
 
 export enum PriorityLevel {
@@ -1063,7 +1067,8 @@ export class TodoItemDto implements ITodoItemDto {
     done?: boolean;
     priority?: number;
     note?: string | undefined;
-
+    tags? : string;
+    tagList? : TagListModel;
     constructor(data?: ITodoItemDto) {
         if (data) {
             for (var property in data) {
@@ -1081,6 +1086,7 @@ export class TodoItemDto implements ITodoItemDto {
             this.done = _data["done"];
             this.priority = _data["priority"];
             this.note = _data["note"];
+            this.tags = _data["tags"];
         }
     }
 
@@ -1099,6 +1105,7 @@ export class TodoItemDto implements ITodoItemDto {
         data["done"] = this.done;
         data["priority"] = this.priority;
         data["note"] = this.note;
+        data["tags"] = this.tags;
         return data;
     }
 }
@@ -1110,6 +1117,7 @@ export interface ITodoItemDto {
     done?: boolean;
     priority?: number;
     note?: string | undefined;
+    tags? : string ;
 }
 
 export class CreateTodoListCommand implements ICreateTodoListCommand {

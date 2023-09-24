@@ -1,12 +1,15 @@
 import { Component, TemplateRef, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+
 import {
   TodoListsClient, TodoItemsClient,
   TodoListDto, TodoItemDto, PriorityLevelDto,
   CreateTodoListCommand, UpdateTodoListCommand,
   CreateTodoItemCommand, UpdateTodoItemDetailCommand
 } from '../web-api-client';
+import { TagListConfiguration, TagListModel, TagModel } from '../common/tag-list/tag-list.model';
 
 @Component({
   selector: 'app-todo-component',
@@ -28,13 +31,20 @@ export class TodoComponent implements OnInit {
   listOptionsModalRef: BsModalRef;
   deleteListModalRef: BsModalRef;
   itemDetailsModalRef: BsModalRef;
+  tagListConfig : TagListConfiguration;
+  listViewModel : any;
   itemDetailsFormGroup = this.fb.group({
     id: [null],
     listId: [null],
     priority: [''],
-    note: ['']
+    note: [''],
+    tags:['']
   });
-
+  supportedColors : any;
+  selectedColor : any;
+  tags :any;
+  tagListVm : TagListModel;
+  tagTextPlaceHolder : string;
 
   constructor(
     private listsClient: TodoListsClient,
@@ -44,18 +54,56 @@ export class TodoComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.getTodoList();
+  }
+
+  private getTodoList(){
     this.listsClient.get().subscribe(
       result => {
+        debugger
         this.lists = result.lists;
         this.priorityLevels = result.priorityLevels;
         if (this.lists.length) {
-          this.selectedList = this.lists[0];
+          this.updateContent();
         }
       },
       error => console.error(error)
     );
   }
+  updateContent() {
+    this.tagListVm = new TagListModel();
+    this.selectedList = this.lists[0];
+    this.setSupportedtNoteColors();
+    this.updateConfig();
+    sessionStorage.setItem("previousListItem", this.selectedList?.items.length > 0 ? JSON.stringify (this.selectedList.items) : '');
+    this.mapTagstoVm();
+  }
 
+  mapTagstoVm() {
+    debugger
+    if (!this.selectedList?.items)
+      return;
+    let tagListLabels : string[] = [];
+    this.selectedList.items.forEach(element => {
+   
+      element.tagList = new TagListModel();
+
+      if (!element.tags)
+        return;
+
+      element.tagList.tags = element?.tags.length > 0 ?JSON.parse(element.tags) : [];
+
+      element.tagList.tags.forEach(element => {
+        if (!tagListLabels.includes(element.label))
+          tagListLabels.push(element.label);
+      });
+
+    });
+
+
+    this.tagTextPlaceHolder =`Available Tags : ${tagListLabels.join(',')}`;
+    
+  }
   // Lists
   remainingItems(list: TodoListDto): number {
     return list.items.filter(t => !t.done).length;
@@ -99,6 +147,7 @@ export class TodoComponent implements OnInit {
   }
 
   showListOptionsModal(template: TemplateRef<any>) {
+    
     this.listOptionsEditor = {
       id: this.selectedList.id,
       title: this.selectedList.title
@@ -137,6 +186,7 @@ export class TodoComponent implements OnInit {
 
   // Items
   showItemDetailsModal(template: TemplateRef<any>, item: TodoItemDto): void {
+    
     this.selectedItem = item;
     this.itemDetailsFormGroup.patchValue(this.selectedItem);
 
@@ -147,7 +197,11 @@ export class TodoComponent implements OnInit {
   }
 
   updateItemDetails(): void {
+    
     const item = new UpdateTodoItemDetailCommand(this.itemDetailsFormGroup.value);
+
+    item.tags = this.tags.length > 0 ? JSON.stringify(this.tags) : null ;
+    
     this.itemsClient.updateItemDetails(this.selectedItem.id, item).subscribe(
       () => {
         if (this.selectedItem.listId !== item.listId) {
@@ -163,14 +217,19 @@ export class TodoComponent implements OnInit {
 
         this.selectedItem.priority = item.priority;
         this.selectedItem.note = item.note;
+        this.selectedItem.tags = item.tags;
         this.itemDetailsModalRef.hide();
         this.itemDetailsFormGroup.reset();
+        this.mapTagstoVm();
       },
       error => console.error(error)
     );
   }
 
   addItem() {
+    
+   
+
     const item = {
       id: 0,
       listId: this.selectedList.id,
@@ -190,6 +249,8 @@ export class TodoComponent implements OnInit {
   }
 
   updateItem(item: TodoItemDto, pressedEnter: boolean = false): void {
+
+    debugger
     const isNewItem = item.id === 0;
 
     if (!item.title.trim()) {
@@ -260,5 +321,126 @@ export class TodoComponent implements OnInit {
     clearInterval(this.deleteCountDownInterval);
     this.deleteCountDown = 0;
     this.deleting = false;
+  }
+
+  setSupportedtNoteColors() {
+    this.supportedColors = [
+      {
+        name: 'CHOOSE COLOR',
+        value: ''
+      },
+      {
+        name: 'yellow',
+        value: '#FFFF66'
+      },
+      {
+        name: 'green',
+        value: '#CCFF99'
+      },
+      {
+        name: 'red',
+        value: '#FF5733'
+      },
+      {
+        name: 'grey',
+        value: '#999999'
+      },
+      {
+        name: 'white',
+        value: '#FFFFFF'
+      }, {
+        name: 'orange',
+        value: '#FFC300'
+      },
+      {
+        name: 'blue',
+        value: '#6666FF'
+      },
+      {
+        name: 'purple',
+        value: '#9966CC'
+      }
+    ]
+
+    this.supportedColors = this.supportedColors.sort();
+  }
+
+
+  addTag(eventData,isFilter = false){
+   
+    if (!eventData)
+      return;
+
+    this.tags = eventData?.tags;
+    
+    if (isFilter)
+    {
+      this.filterTags(this.tags);
+      this.mapTagstoVm();
+    }
+  }
+
+  delTag(eventData, isFilter = false){
+
+    if (!eventData)
+      return;
+
+    this.tags = eventData?.tags;
+
+    if(isFilter){
+      this.filterTags(this.tags);
+      this.mapTagstoVm();
+    }   
+  }
+
+  filterTags(tags){
+  debugger
+    let listItem : any[] =  this.selectedList.items;
+
+    if (!tags || tags.length == 0) {
+      this.getTodoList();
+
+      return;
+    }
+
+  this.selectedList.items = [];
+
+    for (let tagIndex = 0; tagIndex < tags.length; tagIndex++) {
+      
+      let currentTag = tags[tagIndex];
+      
+       for (let itemIndex = 0; itemIndex < listItem.length; itemIndex++) {
+        let currentItem  = listItem[itemIndex];
+        
+        let parsedTags = currentItem.tags ? JSON.parse(currentItem.tags) : "";
+        
+        if (!parsedTags)
+            continue;
+
+          let isMatched =  parsedTags.find(x => x.label.includes(currentTag.label));
+          
+          if (isMatched && !this.selectedList.items.includes(currentItem))
+            this.selectedList.items.push(currentItem);
+       }
+    }
+  }
+
+  // configuration for color and separated keys to make it dynamic
+  updateConfig() {
+    this.tagListConfig = {
+      color: "#0d6efd",
+      separatorKeysCodes: [ENTER, COMMA]
+    }    
+  }
+
+  searchByTitle(text) {
+    debugger
+    if (!text?.target?.value) {
+      this.getTodoList();
+      return;
+    }
+    let filteredList = this.selectedList.items.filter(x => x.title.includes(text?.target?.value));
+    this.selectedList.items = filteredList;
+
   }
 }

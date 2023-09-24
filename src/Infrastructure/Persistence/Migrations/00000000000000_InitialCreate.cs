@@ -240,6 +240,7 @@ namespace Todo_App.Infrastructure.Persistence.Migrations
                     Priority = table.Column<int>(type: "int", nullable: false),
                     Reminder = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Done = table.Column<bool>(type: "bit", nullable: false),
+                    Tags = table.Column<string>(type:"nvarchar(max)",nullable: true),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastModified = table.Column<DateTime>(type: "datetime2", nullable: true),

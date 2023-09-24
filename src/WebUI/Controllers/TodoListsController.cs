@@ -11,8 +11,8 @@ public class TodoListsController : ApiControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<TodosVm>> Get()
-    {
-        return await Mediator.Send(new GetTodosQuery());
+        {
+       return await Mediator.Send(new GetTodosQuery());
     }
 
     [HttpGet("{id}")]
