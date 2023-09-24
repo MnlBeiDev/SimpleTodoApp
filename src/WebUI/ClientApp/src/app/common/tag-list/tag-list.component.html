@@ -1,0 +1,24 @@
+<mat-form-field  *ngIf="viewModel?.tags" [floatLabel]="'never'"> 
+
+  
+
+    <mat-chip-list #taglist>
+
+        <mat-chip #tagItem [style.background-color] = "config?.color" class="mat-chip" *ngFor="let tag of viewModel.tags" [selectable]="selectable" [removable]="removable"
+            (removed)="remove(tag.label)">
+           {{tag.label}}
+            <mat-icon  matChipRemove *ngIf="removable">
+                cancel
+            </mat-icon>
+        </mat-chip>
+
+        
+    </mat-chip-list>
+
+    <input type="text"
+    placeholder="Add Tags..." 
+    [matChipInputFor]="taglist"  
+    [matChipInputSeparatorKeyCodes]="config?.separatorKeysCodes"
+    (matChipInputTokenEnd)="add($event)" />
+
+</mat-form-field>

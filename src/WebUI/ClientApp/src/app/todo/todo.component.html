@@ -54,7 +54,9 @@
                 (click)="editItem(item, 'itemTitle' + i)" class="form-control item-input-control">
                 <span>{{ item.title }}</span>
               </div>
-            
+              <div class="mat-app-background basic-container">
+                <tag-list [viewModel] = "tagListVm" [config] = 'tagListConfig' (newTagEvent)="addTag($event)" (delTagEvent) = "delTag($event)"></tag-list>
+              </div>
             </div>
             <div class="todo-item-commands">
               <button *ngIf="item.id != 0" (click)="showItemDetailsModal(itemDetailsModalTemplate, item)"

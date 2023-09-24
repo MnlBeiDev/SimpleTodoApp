@@ -41,7 +41,8 @@ export class TodoComponent implements OnInit {
   });
   supportedColors : any;
   selectedColor : any;
-
+  tags :any;
+  tagListVm : TagListModel;
 
   constructor(
     private listsClient: TodoListsClient,
@@ -65,11 +66,27 @@ export class TodoComponent implements OnInit {
   updateContent() {
     this.selectedList = this.lists[0];
     this.setSupportedtNoteColors();
-   
-   
+    this.updateConfig();
+    
+    this.mapTagstoVm();
   }
 
- 
+  mapTagstoVm() {
+    if (this.selectedList?.items)
+      return;
+
+    this.tagListVm = new TagListModel();
+
+    this.selectedList.items.forEach(element => {
+
+      if (!element.tags)
+        return;
+
+      let currentTags: TagModel[] = JSON.parse(element.tags);
+
+      this.tagListVm.tags = currentTags;
+    });
+  }
   // Lists
   remainingItems(list: TodoListDto): number {
     return list.items.filter(t => !t.done).length;
@@ -326,7 +343,28 @@ export class TodoComponent implements OnInit {
   }
 
 
-  
+  addTag(evenData){
+   
+    if (!evenData)
+      return;
 
-  
+      this.tags = evenData;
+
+     
+  }
+
+  delTag(eventData){
+    this.tags = eventData;
+  }
+
+  // configuration for color and separated keys to make it dynamic
+  updateConfig() {
+
+    this.tagListConfig = {
+      color: "#0d6efd",
+      separatorKeysCodes: [ENTER, COMMA]
+    }
+
+    
+  }
 }
