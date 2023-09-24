@@ -23,3 +23,5 @@ code {
 
 /* Importing Bootstrap Icons SCSS file. */
 @import '../node_modules/bootstrap-icons/font/bootstrap-icons';
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

@@ -854,7 +854,7 @@ export class UpdateTodoItemDetailCommand implements IUpdateTodoItemDetailCommand
     listId?: number;
     priority?: PriorityLevel;
     note?: string | undefined;
-
+    colour? : string;
     constructor(data?: IUpdateTodoItemDetailCommand) {
         if (data) {
             for (var property in data) {
@@ -870,6 +870,7 @@ export class UpdateTodoItemDetailCommand implements IUpdateTodoItemDetailCommand
             this.listId = _data["listId"];
             this.priority = _data["priority"];
             this.note = _data["note"];
+            this.colour = _data["colour"]; 
         }
     }
 
@@ -886,6 +887,7 @@ export class UpdateTodoItemDetailCommand implements IUpdateTodoItemDetailCommand
         data["listId"] = this.listId;
         data["priority"] = this.priority;
         data["note"] = this.note;
+        data["colour"] = this.colour;
         return data;
     }
 }
@@ -1063,6 +1065,8 @@ export class TodoItemDto implements ITodoItemDto {
     done?: boolean;
     priority?: number;
     note?: string | undefined;
+    colour? : string;
+    tags? : string;
 
     constructor(data?: ITodoItemDto) {
         if (data) {
@@ -1081,6 +1085,8 @@ export class TodoItemDto implements ITodoItemDto {
             this.done = _data["done"];
             this.priority = _data["priority"];
             this.note = _data["note"];
+            this.colour = _data["colour"];
+            this.tags = _data["tags"];
         }
     }
 
@@ -1099,6 +1105,8 @@ export class TodoItemDto implements ITodoItemDto {
         data["done"] = this.done;
         data["priority"] = this.priority;
         data["note"] = this.note;
+        data["colour"] = this.colour;
+        data["tags"] = this.tags;
         return data;
     }
 }
