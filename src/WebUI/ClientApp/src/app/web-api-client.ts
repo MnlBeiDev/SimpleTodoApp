@@ -775,7 +775,7 @@ export interface ITodoItemBriefDto {
     listId?: number;
     title?: string | undefined;
     done?: boolean;
-    deleted? : boolean;p
+    deleted? : boolean;
 }
 
 export class CreateTodoItemCommand implements ICreateTodoItemCommand {
