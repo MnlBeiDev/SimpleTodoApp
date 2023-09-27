@@ -49,9 +49,14 @@ public class TodoItemsController : ApiControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<ActionResult> Delete(int id,DeleteTodoItemCommand command)
     {
-        await Mediator.Send(new DeleteTodoItemCommand(id));
+        if (id != command.Id)
+        {
+            return BadRequest();
+        }
+
+        await Mediator.Send(command);
 
         return NoContent();
     }
