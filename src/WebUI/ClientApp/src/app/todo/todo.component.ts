@@ -9,7 +9,6 @@ import {
   CreateTodoListCommand, UpdateTodoListCommand,
   CreateTodoItemCommand, UpdateTodoItemDetailCommand
 } from '../web-api-client';
-import { TagListConfiguration, TagListModel, TagModel } from '../common/tag-list/tag-list.model';
 
 @Component({
   selector: 'app-todo-component',
@@ -31,7 +30,6 @@ export class TodoComponent implements OnInit {
   listOptionsModalRef: BsModalRef;
   deleteListModalRef: BsModalRef;
   itemDetailsModalRef: BsModalRef;
-  tagListConfig : TagListConfiguration;
   itemDetailsFormGroup = this.fb.group({
     id: [null],
     listId: [null],
