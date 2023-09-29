@@ -60,7 +60,7 @@ export class TodoComponent implements OnInit {
   private getTodoList(){
     this.listsClient.get().subscribe(
       result => {
-        debugger
+        
         this.lists = result.lists;
         this.priorityLevels = result.priorityLevels;
         if (this.lists.length) {
@@ -80,7 +80,7 @@ export class TodoComponent implements OnInit {
   }
 
   mapTagstoVm() {
-    debugger
+    
     if (!this.selectedList?.items)
       return;
     let tagListLabels : string[] = [];
@@ -200,7 +200,7 @@ export class TodoComponent implements OnInit {
     
     const item = new UpdateTodoItemDetailCommand(this.itemDetailsFormGroup.value);
 
-    item.tags = this.tags.length > 0 ? JSON.stringify(this.tags) : null ;
+    item.tags = this.tags?.length > 0 ? JSON.stringify(this.tags) : null ;
     
     this.itemsClient.updateItemDetails(this.selectedItem.id, item).subscribe(
       () => {
@@ -250,7 +250,6 @@ export class TodoComponent implements OnInit {
 
   updateItem(item: TodoItemDto, pressedEnter: boolean = false): void {
 
-    debugger
     const isNewItem = item.id === 0;
 
     if (!item.title.trim()) {
@@ -394,7 +393,7 @@ export class TodoComponent implements OnInit {
   }
 
   filterTags(tags){
-  debugger
+  
     let listItem : any[] =  this.selectedList.items;
 
     if (!tags || tags.length == 0) {
@@ -434,7 +433,7 @@ export class TodoComponent implements OnInit {
   }
 
   searchByTitle(text) {
-    debugger
+    
     if (!text?.target?.value) {
       this.getTodoList();
       return;

@@ -143,7 +143,7 @@
       <div class ="form-group">
         <label for ="tags">Tags</label>
         <div class="mat-app-background basic-container">
-          <tag-list id = "tags" class="form-control" formControlName ="tags" [viewModel] = "selectedItem?.tagList" [isReadOnly] = "false" [removable] = "true" [config] = 'tagListConfig' (newTagEvent)="addTag($event)" (delTagEvent) = "delTag($event)"></tag-list>
+          <tag-list id = "tags" class="form-control" formControlName ="tags" [viewModel] = "selectedItem?.tagList" [isReadOnly] = "false" [removable] = "true" [textPlaceHolder] = "'Add Tag press enter after ..'" [config] = 'tagListConfig' (newTagEvent)="addTag($event)" (delTagEvent) = "delTag($event)"></tag-list>
         </div>
       </div>
     </form>
