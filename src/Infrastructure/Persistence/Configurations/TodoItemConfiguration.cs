@@ -14,5 +14,8 @@ public class TodoItemConfiguration : IEntityTypeConfiguration<TodoItem>
 
         builder.Property(t => t.Note)
             .HasMaxLength(2);
+        builder
+           .OwnsOne(b => b.Colour);
+
     }
 }

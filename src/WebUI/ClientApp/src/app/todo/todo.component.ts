@@ -1,6 +1,8 @@
 import { Component, TemplateRef, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+
 import {
   TodoListsClient, TodoItemsClient,
   TodoListDto, TodoItemDto, PriorityLevelDto,
@@ -32,8 +34,11 @@ export class TodoComponent implements OnInit {
     id: [null],
     listId: [null],
     priority: [''],
-    note: ['']
+    note: [''],
+    colour:['']
   });
+  supportedColors : any;
+  selectedColor : any;
 
 
   constructor(
@@ -49,13 +54,20 @@ export class TodoComponent implements OnInit {
         this.lists = result.lists;
         this.priorityLevels = result.priorityLevels;
         if (this.lists.length) {
-          this.selectedList = this.lists[0];
+          this.updateContent();
         }
       },
       error => console.error(error)
     );
   }
+  updateContent() {
+    this.selectedList = this.lists[0];
+    this.setSupportedtNoteColors();
+   
+   
+  }
 
+ 
   // Lists
   remainingItems(list: TodoListDto): number {
     return list.items.filter(t => !t.done).length;
@@ -99,6 +111,7 @@ export class TodoComponent implements OnInit {
   }
 
   showListOptionsModal(template: TemplateRef<any>) {
+    
     this.listOptionsEditor = {
       id: this.selectedList.id,
       title: this.selectedList.title
@@ -137,7 +150,9 @@ export class TodoComponent implements OnInit {
 
   // Items
   showItemDetailsModal(template: TemplateRef<any>, item: TodoItemDto): void {
+    
     this.selectedItem = item;
+    this.selectedColor = this.supportedColors?.find(x=> x.value == item?.colour) ?? this.supportedColors[0];
     this.itemDetailsFormGroup.patchValue(this.selectedItem);
 
     this.itemDetailsModalRef = this.modalService.show(template);
@@ -147,6 +162,7 @@ export class TodoComponent implements OnInit {
   }
 
   updateItemDetails(): void {
+    
     const item = new UpdateTodoItemDetailCommand(this.itemDetailsFormGroup.value);
     this.itemsClient.updateItemDetails(this.selectedItem.id, item).subscribe(
       () => {
@@ -163,6 +179,7 @@ export class TodoComponent implements OnInit {
 
         this.selectedItem.priority = item.priority;
         this.selectedItem.note = item.note;
+        this.selectedItem.colour = item.colour;
         this.itemDetailsModalRef.hide();
         this.itemDetailsFormGroup.reset();
       },
@@ -190,6 +207,8 @@ export class TodoComponent implements OnInit {
   }
 
   updateItem(item: TodoItemDto, pressedEnter: boolean = false): void {
+
+    debugger
     const isNewItem = item.id === 0;
 
     if (!item.title.trim()) {
@@ -261,4 +280,51 @@ export class TodoComponent implements OnInit {
     this.deleteCountDown = 0;
     this.deleting = false;
   }
+
+  setSupportedtNoteColors() {
+    this.supportedColors = [
+      {
+        name: 'CHOOSE COLOR',
+        value: ''
+      },
+      {
+        name: 'yellow',
+        value: '#FFFF66'
+      },
+      {
+        name: 'green',
+        value: '#CCFF99'
+      },
+      {
+        name: 'red',
+        value: '#FF5733'
+      },
+      {
+        name: 'grey',
+        value: '#999999'
+      },
+      {
+        name: 'white',
+        value: '#FFFFFF'
+      }, {
+        name: 'orange',
+        value: '#FFC300'
+      },
+      {
+        name: 'blue',
+        value: '#6666FF'
+      },
+      {
+        name: 'purple',
+        value: '#9966CC'
+      }
+    ]
+
+    this.supportedColors = this.supportedColors.sort();
+  }
+
+
+  
+
+  
 }
