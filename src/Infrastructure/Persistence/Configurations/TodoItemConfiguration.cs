@@ -20,5 +20,8 @@ public class TodoItemConfiguration : IEntityTypeConfiguration<TodoItem>
 
 
         builder.Property(t => t.Deleted);
+        builder.Property(t => t.Note);
+
+        builder.Property(b => b.Tags);
     }
 }

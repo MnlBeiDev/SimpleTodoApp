@@ -15,4 +15,6 @@ public class TodoItemBriefDto : IMapFrom<TodoItem>
     public bool Done { get; set; }
 
     public string Colour { get; set; }
+
+    public string? Tags { get; set; }
 }

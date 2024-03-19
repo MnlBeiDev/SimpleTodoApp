@@ -12,6 +12,7 @@ import { mergeMap as _observableMergeMap, catchError as _observableCatch } from 
 import { Observable, throwError as _observableThrow, of as _observableOf } from 'rxjs';
 import { Injectable, Inject, Optional, InjectionToken } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse, HttpResponseBase } from '@angular/common/http';
+import { TagListModel } from './common/tag-list/tag-list.model';
 
 export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
 
@@ -776,12 +777,14 @@ export interface ITodoItemBriefDto {
     title?: string | undefined;
     done?: boolean;
     deleted? : boolean;
+    
 }
 
 export class CreateTodoItemCommand implements ICreateTodoItemCommand {
     listId?: number;
     title?: string | undefined;
-
+    colour? : string | undefined;
+    tags?: string;
     constructor(data?: ICreateTodoItemCommand) {
         if (data) {
             for (var property in data) {
@@ -795,10 +798,13 @@ export class CreateTodoItemCommand implements ICreateTodoItemCommand {
         if (_data) {
             this.listId = _data["listId"];
             this.title = _data["title"];
+            this.colour = _data["colour"];
+            this.tags = _data["tags"];
         }
     }
 
     static fromJS(data: any): CreateTodoItemCommand {
+        debugger
         data = typeof data === 'object' ? data : {};
         let result = new CreateTodoItemCommand();
         result.init(data);
@@ -809,6 +815,9 @@ export class CreateTodoItemCommand implements ICreateTodoItemCommand {
         data = typeof data === 'object' ? data : {};
         data["listId"] = this.listId;
         data["title"] = this.title;
+        data["colour"] = this.colour;
+        data["tags"] = this.tags;
+
         return data;
     }
 }
@@ -816,6 +825,8 @@ export class CreateTodoItemCommand implements ICreateTodoItemCommand {
 export interface ICreateTodoItemCommand {
     listId?: number;
     title?: string | undefined;
+    colour? : string | undefined;
+    tags?: string;
 }
 
 export class UpdateTodoItemCommand implements IUpdateTodoItemCommand {
@@ -868,6 +879,7 @@ export class UpdateTodoItemDetailCommand implements IUpdateTodoItemDetailCommand
     priority?: PriorityLevel;
     note?: string | undefined;
     colour? : string;
+    tags? : string;
     constructor(data?: IUpdateTodoItemDetailCommand) {
         if (data) {
             for (var property in data) {
@@ -884,6 +896,7 @@ export class UpdateTodoItemDetailCommand implements IUpdateTodoItemDetailCommand
             this.priority = _data["priority"];
             this.note = _data["note"];
             this.colour = _data["colour"]; 
+            this.tags = _data["tags"]; 
         }
     }
 
@@ -915,6 +928,7 @@ export interface IUpdateTodoItemDetailCommand {
 export class DeleteTodoItemDetailCommand implements DeleteTodoItemDetailCommand {
     id?: number;
     deleted?: boolean;
+    tags?: string;
     
     constructor(data?: IUpdateTodoItemDetailCommand) {
         if (data) {
@@ -943,6 +957,7 @@ export class DeleteTodoItemDetailCommand implements DeleteTodoItemDetailCommand 
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
         data["deleted"] = this.deleted;
+        data["tags"] = this.tags;
         return data;
     }
 }
@@ -952,6 +967,7 @@ export interface IUpdateTodoItemDetailCommand {
     listId?: number;
     priority?: PriorityLevel;
     note?: string | undefined;
+    tags?: string;
 }
 
 export enum PriorityLevel {
@@ -1124,9 +1140,9 @@ export class TodoItemDto implements ITodoItemDto {
     priority?: number;
     note?: string | undefined;
     colour? : string;
-    tags? : string;
     deleted? : boolean;
-
+    tags? : string;
+    tagList? : TagListModel;
     constructor(data?: ITodoItemDto) {
         if (data) {
             for (var property in data) {
@@ -1180,6 +1196,7 @@ export interface ITodoItemDto {
     priority?: number;
     note?: string | undefined;
     deleted? : boolean;
+    tags? : string ;
 }
 
 export class CreateTodoListCommand implements ICreateTodoListCommand {

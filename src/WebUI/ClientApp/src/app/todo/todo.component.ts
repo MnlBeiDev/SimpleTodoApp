@@ -9,6 +9,7 @@ import {
   CreateTodoListCommand, UpdateTodoListCommand,
   CreateTodoItemCommand, UpdateTodoItemDetailCommand, DeleteTodoListCommand
 } from '../web-api-client';
+import { TagListConfiguration, TagListModel, TagModel } from '../common/tag-list/tag-list.model';
 
 @Component({
   selector: 'app-todo-component',
@@ -30,16 +31,21 @@ export class TodoComponent implements OnInit {
   listOptionsModalRef: BsModalRef;
   deleteListModalRef: BsModalRef;
   itemDetailsModalRef: BsModalRef;
+  tagListConfig : TagListConfiguration;
+  listViewModel : any;
   itemDetailsFormGroup = this.fb.group({
     id: [null],
     listId: [null],
     priority: [''],
     note: [''],
-    colour:['']
+    colour:[''],
+    tags:['']
   });
   supportedColors : any;
   selectedColor : any;
-
+  tags :any;
+  tagListVm : TagListModel;
+  tagTextPlaceHolder : string;
 
   constructor(
     private listsClient: TodoListsClient,
@@ -49,9 +55,15 @@ export class TodoComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    
+    this.getTodoList();
+  }
+
+  private getTodoList(){
     this.listsClient.get().subscribe(
       result => {
-        this.lists = result.lists?.filter(x=> x.deleted === null || x.deleted);
+        
+        this.lists = result.lists?.filter(x=> x.deleted === null ||x.deleted);
         
         this.priorityLevels = result.priorityLevels;
         if (this.lists.length) {
@@ -62,13 +74,40 @@ export class TodoComponent implements OnInit {
     );
   }
   updateContent() {
+    this.tagListVm = new TagListModel();
     this.selectedList = this.lists[0];
+    
     this.setSupportedtNoteColors();
-   
-   
+    this.updateConfig();
+    sessionStorage.setItem("previousListItem", this.selectedList?.items.length > 0 ? JSON.stringify (this.selectedList.items) : '');
+    this.mapTagstoVm();
   }
 
- 
+  mapTagstoVm() {
+    
+    if (!this.selectedList?.items)
+      return;
+    let tagListLabels : string[] = [];
+    this.selectedList.items.forEach(element => {
+   
+      element.tagList = new TagListModel();
+
+      if (!element.tags)
+        return;
+
+      element.tagList.tags = element?.tags.length > 0 ?JSON.parse(element.tags) : [];
+
+      element.tagList.tags.forEach(element => {
+        if (!tagListLabels.includes(element.label))
+          tagListLabels.push(element.label);
+      });
+
+    });
+
+
+    this.tagTextPlaceHolder =`Available Tags : ${tagListLabels.join(',')}`;
+    
+  }
   // Lists
   remainingItems(list: TodoListDto): number {
     return list.items.filter(t => !t.done).length;
@@ -139,7 +178,7 @@ export class TodoComponent implements OnInit {
   }
 
   deleteListConfirmed(): void {
-    debugger
+    
     const  list  = new DeleteTodoListCommand();
     list.id = this.selectedList.id
     list.deleted = false;
@@ -170,6 +209,9 @@ export class TodoComponent implements OnInit {
   updateItemDetails(): void {
     
     const item = new UpdateTodoItemDetailCommand(this.itemDetailsFormGroup.value);
+
+    item.tags = this.tags?.length > 0 ? JSON.stringify(this.tags) : null ;
+    
     this.itemsClient.updateItemDetails(this.selectedItem.id, item).subscribe(
       () => {
         if (this.selectedItem.listId !== item.listId) {
@@ -185,23 +227,30 @@ export class TodoComponent implements OnInit {
 
         this.selectedItem.priority = item.priority;
         this.selectedItem.note = item.note;
+        this.selectedItem.tags = item.tags;
         this.selectedItem.colour = item.colour;
         this.itemDetailsModalRef.hide();
         this.itemDetailsFormGroup.reset();
+        this.mapTagstoVm();
       },
       error => console.error(error)
     );
   }
 
   addItem() {
-    const item = {
-      id: 0,
+    
+    const item  = {
+      id : 0,
       listId: this.selectedList.id,
-      priority: this.priorityLevels[0].value,
       title: '',
-      done: false
+      done: false,
+      priority : 0,
+      note: null,
+      colour: '',
+      deleted: null,
+      tags: null,
     } as TodoItemDto;
-
+    
     this.selectedList.items.push(item);
     const index = this.selectedList.items.length - 1;
     this.editItem(item, 'itemTitle' + index);
@@ -213,6 +262,7 @@ export class TodoComponent implements OnInit {
   }
 
   updateItem(item: TodoItemDto, pressedEnter: boolean = false): void {
+    
     const isNewItem = item.id === 0;
 
     if (!item.title.trim()) {
@@ -220,11 +270,12 @@ export class TodoComponent implements OnInit {
       return;
     }
 
+    
     if (item.id === 0) {
       this.itemsClient
-        .create({
-          ...item, listId: this.selectedList.id
-        } as CreateTodoItemCommand)
+      .create({
+        ...item, listId: this.selectedList.id
+      } as CreateTodoItemCommand)
         .subscribe(
           result => {
             item.id = result;
@@ -237,7 +288,7 @@ export class TodoComponent implements OnInit {
         error => console.error(error)
       );
     }
-
+    debugger
     this.selectedItem = null;
 
     if (isNewItem && pressedEnter) {
@@ -246,8 +297,10 @@ export class TodoComponent implements OnInit {
   }
 
   deleteItem(item: TodoItemDto, countDown?: boolean) {
-    item.deleted = false;
-
+    // for soft delete
+    //item.deleted = false;
+    item.deleted = true;
+    
     if (countDown) {
       if (this.deleting) {
         this.stopDeleteCountDown();
@@ -277,9 +330,13 @@ export class TodoComponent implements OnInit {
     
       this.itemsClient.delete(content.id,content).subscribe(
         () =>
-        (this.selectedList.items = this.selectedList.items.filter(
-          t => t.id !== item.id && t.deleted != null && !t.deleted
-        )),
+        (
+          this.getTodoList()
+          // for soft delete
+          // this.selectedList.items = this.selectedList.items.filter(
+          // t => t.id !== item.id && t.deleted != null && !t.deleted)
+          
+        ),
         error => console.error(error)
       );
     }
@@ -334,7 +391,81 @@ export class TodoComponent implements OnInit {
   }
 
 
-  
+  addTag(eventData,isFilter = false){
+   
+    if (!eventData)
+      return;
 
+    this.tags = eventData?.tags;
+    
+    if (isFilter)
+    {
+      this.filterTags(this.tags);
+      this.mapTagstoVm();
+    }
+  }
+
+  delTag(eventData, isFilter = false){
+
+    if (!eventData)
+      return;
+
+    this.tags = eventData?.tags;
+
+    if(isFilter){
+      this.filterTags(this.tags);
+      this.mapTagstoVm();
+    }   
+  }
+
+  filterTags(tags){
   
+    let listItem : any[] =  this.selectedList.items;
+
+    if (!tags || tags.length == 0) {
+      this.getTodoList();
+
+      return;
+    }
+
+  this.selectedList.items = [];
+
+    for (let tagIndex = 0; tagIndex < tags.length; tagIndex++) {
+      
+      let currentTag = tags[tagIndex];
+      
+       for (let itemIndex = 0; itemIndex < listItem.length; itemIndex++) {
+        let currentItem  = listItem[itemIndex];
+        
+        let parsedTags = currentItem.tags ? JSON.parse(currentItem.tags) : "";
+        
+        if (!parsedTags)
+            continue;
+
+          let isMatched =  parsedTags.find(x => x.label.includes(currentTag.label));
+           
+          if (isMatched && !this.selectedList.items.includes(currentItem))
+            this.selectedList.items.push(currentItem);
+       }
+    }
+  }
+
+  // configuration for color and separated keys to make it dynamic
+  updateConfig() {
+    this.tagListConfig = {
+      color: "#0d6efd",
+      separatorKeysCodes: [ENTER, COMMA]
+    }    
+  }
+
+  searchByTitle(text) {
+    
+    if (!text?.target?.value) {
+      this.getTodoList();
+      return;
+    }
+    let filteredList = this.selectedList.items.filter(x => x.title.includes(text?.target?.value));
+    this.selectedList.items = filteredList;
+
+  }
 }

@@ -33,20 +33,30 @@
       
       <div class="clearfix">
         <h2 class="float-start">{{ selectedList.title }}</h2>
-        <input id="searchBox" type="text">
+        <input id="searchBox" type="text"/>
         <button id="listOptions" class="btn btn-default float-end" title="List Options..."
           (click)="showListOptionsModal(listOptionsModalTemplate)">
           <i class="bi bi-three-dots-vertical"></i>
         </button>
        
       </div>
+      <div>
+        <div>
+          <label> Search </label>
+          <input id="searchBox" type="text" class=" form-control" (keyup) = "searchByTitle($event)">
+        </div>
+        
+        <label> Filter by Tags</label>
+        <tag-list [viewModel] = "tagListVm" [isReadOnly] = "false" [removable] = "true" [config] = 'tagListConfig' [hasTextPlaceHolder] ="true" [textPlaceHolder] = "tagTextPlaceHolder"(newTagEvent)="addTag($event,true)" (delTagEvent) = "delTag($event,true)"></tag-list>
+      </div>
       <ul id="todo-items" class="list-group mb-2">
         <li class="list-group-item" *ngFor="let item of selectedList.items; index as i">
-          <div class="d-flex" *ngIf="item.deleted === null || item.deleted" [style.background-color]="item?.colour">
+          
+          <div class="d-flex"  *ngIf="item.deleted === null || item.deleted">
             <div class="todo-item-checkbox">
               <input type="checkbox" [(ngModel)]="item.done" (change)="updateItem(item)" />
             </div>
-            <div class="flex-fill">
+            <div class="flex-fill" [style.background-color]="item?.colour">
               <input id="{{ 'itemTitle' + i }}" *ngIf="item == selectedItem" type="text"
                 class="form-control item-input-control" [(ngModel)]="item.title" (keyup.enter)="updateItem(item, true)"
                 (blur)="updateItem(item)" autofocus="autofocus" />
@@ -54,7 +64,9 @@
                 (click)="editItem(item, 'itemTitle' + i)" class="form-control item-input-control">
                 <span>{{ item.title }}</span>
               </div>
-            
+              <div class="mat-app-background basic-container">
+                <tag-list [viewModel] = "item.tagList" [isReadOnly] = "true" [removable] = "false" [config] = 'tagListConfig' (newTagEvent)="addTag($event)" (delTagEvent) = "delTag($event)"></tag-list>
+              </div>
             </div>
             <div class="todo-item-commands">
               <button *ngIf="item.id != 0" (click)="showItemDetailsModal(itemDetailsModalTemplate, item)"
@@ -129,6 +141,13 @@
       </div>
       <div class="form-group">
         <label for="note">Note</label>
+        <textarea id="note" class="form-control" rows="3" formControlName="note"> {{ selectedItem.note }}</textarea>
+      </div>
+      <div class ="form-group">
+        <label for ="tags">Tags</label>
+        <div class="mat-app-background basic-container">
+          <tag-list id = "tags" class="form-control" formControlName ="tags" [viewModel] = "selectedItem?.tagList" [isReadOnly] = "false" [removable] = "true" [textPlaceHolder] = "'Add Tag press enter after ..'" [config] = 'tagListConfig' (newTagEvent)="addTag($event)" (delTagEvent) = "delTag($event)"></tag-list>
+        </div>
         <textarea id="note" class="form-control" rows="3" formControlName="note"> {{ selectedItem.note }}</textarea>
       </div>
       <div class ="form-group">

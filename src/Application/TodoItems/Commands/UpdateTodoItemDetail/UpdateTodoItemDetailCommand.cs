@@ -16,6 +16,7 @@ public record UpdateTodoItemDetailCommand : IRequest
     public PriorityLevel Priority { get; init; }
 
     public string? Note { get; init; }
+    public string? Tags { get; init; }
 
     public string? Colour { get; set; }
 }
@@ -43,6 +44,8 @@ public class UpdateTodoItemDetailCommandHandler : IRequestHandler<UpdateTodoItem
         entity.Priority = request.Priority;
         entity.Note = request.Note;
         entity.Colour = request.Colour == null ? Colour.White  : Colour.From(request.Colour);
+        entity.Tags = request.Tags;
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;
