@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Security.Cryptography.X509Certificates;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Todo_App.Domain.Entities;
 
@@ -17,5 +18,7 @@ public class TodoItemConfiguration : IEntityTypeConfiguration<TodoItem>
         builder
            .OwnsOne(b => b.Colour);
 
+
+        builder.Property(t => t.Deleted);
     }
 }

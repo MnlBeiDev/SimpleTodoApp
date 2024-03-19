@@ -19,7 +19,7 @@ export interface ITodoItemsClient {
     getTodoItemsWithPagination(listId: number | undefined, pageNumber: number | undefined, pageSize: number | undefined): Observable<PaginatedListOfTodoItemBriefDto>;
     create(command: CreateTodoItemCommand): Observable<number>;
     update(id: number, command: UpdateTodoItemCommand): Observable<FileResponse>;
-    delete(id: number): Observable<FileResponse>;
+    delete(id: number, command : DeleteTodoItemDetailCommand): Observable<FileResponse>;
     updateItemDetails(id: number | undefined, command: UpdateTodoItemDetailCommand): Observable<FileResponse>;
 }
 
@@ -202,7 +202,10 @@ export class TodoItemsClient implements ITodoItemsClient {
         return _observableOf(null as any);
     }
 
-    delete(id: number): Observable<FileResponse> {
+    delete(id: number, command: DeleteTodoItemDetailCommand ): Observable<FileResponse> {
+
+        const content_ = JSON.stringify(command);
+
         let url_ = this.baseUrl + "/api/TodoItems/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -211,8 +214,10 @@ export class TodoItemsClient implements ITodoItemsClient {
 
         let options_ : any = {
             observe: "response",
+            body : content_,
             responseType: "blob",
             headers: new HttpHeaders({
+                "Content-Type": "application/json",
                 "Accept": "application/octet-stream"
             })
         };
@@ -311,7 +316,7 @@ export interface ITodoListsClient {
     create(command: CreateTodoListCommand): Observable<number>;
     get2(id: number): Observable<FileResponse>;
     update(id: number, command: UpdateTodoListCommand): Observable<FileResponse>;
-    delete(id: number): Observable<FileResponse>;
+    delete(id: number, command : DeleteTodoListCommand) : Observable<FileResponse>;
 }
 
 @Injectable({
@@ -358,7 +363,7 @@ export class TodoListsClient implements ITodoListsClient {
         const responseBlob =
             response instanceof HttpResponse ? response.body :
             (response as any).error instanceof Blob ? (response as any).error : undefined;
-
+        
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -530,7 +535,9 @@ export class TodoListsClient implements ITodoListsClient {
         return _observableOf(null as any);
     }
 
-    delete(id: number): Observable<FileResponse> {
+    delete(id: number, command : DeleteTodoListCommand): Observable<FileResponse> {
+        const content_ = JSON.stringify(command);
+        
         let url_ = this.baseUrl + "/api/TodoLists/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -540,7 +547,9 @@ export class TodoListsClient implements ITodoListsClient {
         let options_ : any = {
             observe: "response",
             responseType: "blob",
+            body: content_,
             headers: new HttpHeaders({
+                "Content-Type": "application/json",
                 "Accept": "application/octet-stream"
             })
         };
@@ -722,6 +731,7 @@ export class TodoItemBriefDto implements ITodoItemBriefDto {
     listId?: number;
     title?: string | undefined;
     done?: boolean;
+    deleted? :boolean;
 
     constructor(data?: ITodoItemBriefDto) {
         if (data) {
@@ -738,6 +748,7 @@ export class TodoItemBriefDto implements ITodoItemBriefDto {
             this.listId = _data["listId"];
             this.title = _data["title"];
             this.done = _data["done"];
+            this.deleted = _data["deleted"];
         }
     }
 
@@ -754,6 +765,7 @@ export class TodoItemBriefDto implements ITodoItemBriefDto {
         data["listId"] = this.listId;
         data["title"] = this.title;
         data["done"] = this.done;
+        data["deleted"] = this.deleted;
         return data;
     }
 }
@@ -763,6 +775,7 @@ export interface ITodoItemBriefDto {
     listId?: number;
     title?: string | undefined;
     done?: boolean;
+    deleted? : boolean;
 }
 
 export class CreateTodoItemCommand implements ICreateTodoItemCommand {
@@ -899,6 +912,48 @@ export interface IUpdateTodoItemDetailCommand {
     note?: string | undefined;
 }
 
+export class DeleteTodoItemDetailCommand implements DeleteTodoItemDetailCommand {
+    id?: number;
+    deleted?: boolean;
+    
+    constructor(data?: IUpdateTodoItemDetailCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.deleted = _data["deleted"];
+        }
+    }
+
+    static fromJS(data: any): UpdateTodoItemDetailCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateTodoItemDetailCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["deleted"] = this.deleted;
+        return data;
+    }
+}
+
+export interface IUpdateTodoItemDetailCommand {
+    id?: number;
+    listId?: number;
+    priority?: PriorityLevel;
+    note?: string | undefined;
+}
+
 export enum PriorityLevel {
     None = 0,
     Low = 1,
@@ -1007,7 +1062,7 @@ export class TodoListDto implements ITodoListDto {
     title?: string | undefined;
     colour?: string | undefined;
     items?: TodoItemDto[];
-
+    deleted? : boolean;
     constructor(data?: ITodoListDto) {
         if (data) {
             for (var property in data) {
@@ -1022,6 +1077,7 @@ export class TodoListDto implements ITodoListDto {
             this.id = _data["id"];
             this.title = _data["title"];
             this.colour = _data["colour"];
+            this.deleted = _data["deleted"]
             if (Array.isArray(_data["items"])) {
                 this.items = [] as any;
                 for (let item of _data["items"])
@@ -1042,6 +1098,7 @@ export class TodoListDto implements ITodoListDto {
         data["id"] = this.id;
         data["title"] = this.title;
         data["colour"] = this.colour;
+        data["deleted"] = this.deleted;
         if (Array.isArray(this.items)) {
             data["items"] = [];
             for (let item of this.items)
@@ -1055,6 +1112,7 @@ export interface ITodoListDto {
     id?: number;
     title?: string | undefined;
     colour?: string | undefined;
+    deleted? : boolean;
     items?: TodoItemDto[];
 }
 
@@ -1067,6 +1125,7 @@ export class TodoItemDto implements ITodoItemDto {
     note?: string | undefined;
     colour? : string;
     tags? : string;
+    deleted? : boolean;
 
     constructor(data?: ITodoItemDto) {
         if (data) {
@@ -1085,6 +1144,7 @@ export class TodoItemDto implements ITodoItemDto {
             this.done = _data["done"];
             this.priority = _data["priority"];
             this.note = _data["note"];
+            this.deleted = _data["deleted"];
             this.colour = _data["colour"];
             this.tags = _data["tags"];
         }
@@ -1105,6 +1165,7 @@ export class TodoItemDto implements ITodoItemDto {
         data["done"] = this.done;
         data["priority"] = this.priority;
         data["note"] = this.note;
+        data["deleted"] = this.deleted;
         data["colour"] = this.colour;
         data["tags"] = this.tags;
         return data;
@@ -1118,6 +1179,7 @@ export interface ITodoItemDto {
     done?: boolean;
     priority?: number;
     note?: string | undefined;
+    deleted? : boolean;
 }
 
 export class CreateTodoListCommand implements ICreateTodoListCommand {
@@ -1194,6 +1256,46 @@ export class UpdateTodoListCommand implements IUpdateTodoListCommand {
 export interface IUpdateTodoListCommand {
     id?: number;
     title?: string | undefined;
+}
+
+export class DeleteTodoListCommand implements IUpdateTodoListCommand {
+    id?: number;
+    deleted? : boolean;
+
+    constructor(data?: IUpdateTodoListCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.deleted = _data["deleted"];
+        }
+    }
+
+    static fromJS(data: any): UpdateTodoListCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdateTodoListCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["deleted"] = this.deleted;
+        return data;
+    }
+}
+
+export interface IDeleteTodoListCommand {
+    id?: number;
+    deleted? : boolean;
 }
 
 export class WeatherForecast implements IWeatherForecast {

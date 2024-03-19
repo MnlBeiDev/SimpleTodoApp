@@ -30,6 +30,9 @@ namespace Todo_App.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<bool>("Deleted")
+                    .HasColumnType("bit");
+
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
@@ -77,6 +80,10 @@ namespace Todo_App.Infrastructure.Persistence.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<bool>("Deleted")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("bit");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
