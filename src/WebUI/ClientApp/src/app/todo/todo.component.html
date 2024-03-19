@@ -30,16 +30,20 @@
       </ul>
     </div>
     <div class="col-sm-8" *ngIf="selectedList">
+      
       <div class="clearfix">
         <h2 class="float-start">{{ selectedList.title }}</h2>
+        <input id="searchBox" type="text">
         <button id="listOptions" class="btn btn-default float-end" title="List Options..."
           (click)="showListOptionsModal(listOptionsModalTemplate)">
           <i class="bi bi-three-dots-vertical"></i>
         </button>
+       
       </div>
       <ul id="todo-items" class="list-group mb-2">
         <li class="list-group-item" *ngFor="let item of selectedList.items; index as i">
           <div class="d-flex" *ngIf="item.deleted === null || item.deleted">
+          <div class="d-flex" [style.background-color]="item?.colour">
             <div class="todo-item-checkbox">
               <input type="checkbox" [(ngModel)]="item.done" (change)="updateItem(item)" />
             </div>
@@ -51,6 +55,7 @@
                 (click)="editItem(item, 'itemTitle' + i)" class="form-control item-input-control">
                 <span>{{ item.title }}</span>
               </div>
+            
             </div>
             <div class="todo-item-commands">
               <button *ngIf="item.id != 0" (click)="showItemDetailsModal(itemDetailsModalTemplate, item)"
@@ -125,7 +130,13 @@
       </div>
       <div class="form-group">
         <label for="note">Note</label>
-        <textarea id="note" class="form-control" rows="3" formControlName="note"></textarea>
+        <textarea id="note" class="form-control" rows="3" formControlName="note"> {{ selectedItem.note }}</textarea>
+      </div>
+      <div class ="form-group">
+        <label for ="colour"> Color</label>
+        <select class ="form-control" formControlName ="colour" [(ngModel)] = "selectedColor.value">
+          <option *ngFor ="let supportedColor of supportedColors" [value]= "supportedColor.value" > {{ supportedColor.name}}</option>
+      </select>
       </div>
     </form>
     <div *ngIf="debug">
