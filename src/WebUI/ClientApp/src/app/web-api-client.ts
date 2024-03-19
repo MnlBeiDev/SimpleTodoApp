@@ -777,12 +777,14 @@ export interface ITodoItemBriefDto {
     title?: string | undefined;
     done?: boolean;
     deleted? : boolean;
+    
 }
 
 export class CreateTodoItemCommand implements ICreateTodoItemCommand {
     listId?: number;
     title?: string | undefined;
-
+    colour? : string | undefined;
+    tags?: string;
     constructor(data?: ICreateTodoItemCommand) {
         if (data) {
             for (var property in data) {
@@ -796,10 +798,13 @@ export class CreateTodoItemCommand implements ICreateTodoItemCommand {
         if (_data) {
             this.listId = _data["listId"];
             this.title = _data["title"];
+            this.colour = _data["colour"];
+            this.tags = _data["tags"];
         }
     }
 
     static fromJS(data: any): CreateTodoItemCommand {
+        debugger
         data = typeof data === 'object' ? data : {};
         let result = new CreateTodoItemCommand();
         result.init(data);
@@ -810,6 +815,9 @@ export class CreateTodoItemCommand implements ICreateTodoItemCommand {
         data = typeof data === 'object' ? data : {};
         data["listId"] = this.listId;
         data["title"] = this.title;
+        data["colour"] = this.colour;
+        data["tags"] = this.tags;
+
         return data;
     }
 }
@@ -817,6 +825,8 @@ export class CreateTodoItemCommand implements ICreateTodoItemCommand {
 export interface ICreateTodoItemCommand {
     listId?: number;
     title?: string | undefined;
+    colour? : string | undefined;
+    tags?: string;
 }
 
 export class UpdateTodoItemCommand implements IUpdateTodoItemCommand {

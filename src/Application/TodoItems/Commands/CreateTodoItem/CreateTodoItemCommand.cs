@@ -13,7 +13,7 @@ public record CreateTodoItemCommand : IRequest<int>
     public string? Title { get; init; }
 
     public string? Tags { get; init; }
-    public Colour Colour { get; init; }
+    public string? Colour { get; init; }
 }
 
 public class CreateTodoItemCommandHandler : IRequestHandler<CreateTodoItemCommand, int>
@@ -32,7 +32,7 @@ public class CreateTodoItemCommandHandler : IRequestHandler<CreateTodoItemComman
             ListId = request.ListId,
             Title = request.Title,
             Tags = request.Tags,
-            Colour = request.Colour,
+            Colour =  string.IsNullOrWhiteSpace( request.Colour) ? Colour.White : Colour.From(request.Colour),
             Done = false
         };
 
