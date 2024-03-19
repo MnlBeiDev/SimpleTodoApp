@@ -19,7 +19,7 @@
         <li *ngFor="let list of lists; index as i" class="list-group-item"
           [ngClass]="{ 'active': selectedList == list }" (click)="selectedList = list">
           <div class="clearfix">
-            <div class="float-start">
+            <div class="float-start" >
               {{ list.title }}
             </div>
             <div class="float-end text-right">
@@ -33,10 +33,12 @@
       
       <div class="clearfix">
         <h2 class="float-start">{{ selectedList.title }}</h2>
+        <input id="searchBox" type="text"/>
         <button id="listOptions" class="btn btn-default float-end" title="List Options..."
           (click)="showListOptionsModal(listOptionsModalTemplate)">
           <i class="bi bi-three-dots-vertical"></i>
         </button>
+       
       </div>
       <div>
         <div>
@@ -49,11 +51,12 @@
       </div>
       <ul id="todo-items" class="list-group mb-2">
         <li class="list-group-item" *ngFor="let item of selectedList.items; index as i">
-          <div class="d-flex">
+          
+          <div class="d-flex"  *ngIf="item.deleted === null || item.deleted">
             <div class="todo-item-checkbox">
               <input type="checkbox" [(ngModel)]="item.done" (change)="updateItem(item)" />
             </div>
-            <div class="flex-fill">
+            <div class="flex-fill" [style.background-color]="item?.colour">
               <input id="{{ 'itemTitle' + i }}" *ngIf="item == selectedItem" type="text"
                 class="form-control item-input-control" [(ngModel)]="item.title" (keyup.enter)="updateItem(item, true)"
                 (blur)="updateItem(item)" autofocus="autofocus" />
@@ -145,6 +148,13 @@
         <div class="mat-app-background basic-container">
           <tag-list id = "tags" class="form-control" formControlName ="tags" [viewModel] = "selectedItem?.tagList" [isReadOnly] = "false" [removable] = "true" [textPlaceHolder] = "'Add Tag press enter after ..'" [config] = 'tagListConfig' (newTagEvent)="addTag($event)" (delTagEvent) = "delTag($event)"></tag-list>
         </div>
+        <textarea id="note" class="form-control" rows="3" formControlName="note"> {{ selectedItem.note }}</textarea>
+      </div>
+      <div class ="form-group">
+        <label for ="colour"> Color</label>
+        <select class ="form-control" formControlName ="colour" [(ngModel)] = "selectedColor.value">
+          <option *ngFor ="let supportedColor of supportedColors" [value]= "supportedColor.value" > {{ supportedColor.name}}</option>
+      </select>
       </div>
     </form>
     <div *ngIf="debug">

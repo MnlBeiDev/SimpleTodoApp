@@ -2,6 +2,7 @@
 using Todo_App.Application.Common.Interfaces;
 using Todo_App.Domain.Entities;
 using Todo_App.Domain.Events;
+using Todo_App.Domain.ValueObjects;
 
 namespace Todo_App.Application.TodoItems.Commands.CreateTodoItem;
 
@@ -12,6 +13,7 @@ public record CreateTodoItemCommand : IRequest<int>
     public string? Title { get; init; }
 
     public string? Tags { get; init; }
+    public Colour Colour { get; init; }
 }
 
 public class CreateTodoItemCommandHandler : IRequestHandler<CreateTodoItemCommand, int>
@@ -29,8 +31,9 @@ public class CreateTodoItemCommandHandler : IRequestHandler<CreateTodoItemComman
         {
             ListId = request.ListId,
             Title = request.Title,
-            Done = false,
-            Tags = request.Tags
+            Tags = request.Tags,
+            Colour = request.Colour,
+            Done = false
         };
 
         entity.AddDomainEvent(new TodoItemCreatedEvent(entity));

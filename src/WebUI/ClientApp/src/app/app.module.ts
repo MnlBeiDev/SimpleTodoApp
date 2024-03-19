@@ -54,5 +54,6 @@ import {MatListModule} from '@angular/material/list';
     { provide: HTTP_INTERCEPTORS, useClass: AuthorizeInterceptor, multi: true }
   ],
   bootstrap: [AppComponent]
+  
 })
 export class AppModule { }

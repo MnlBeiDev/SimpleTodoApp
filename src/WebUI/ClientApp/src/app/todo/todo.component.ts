@@ -7,7 +7,7 @@ import {
   TodoListsClient, TodoItemsClient,
   TodoListDto, TodoItemDto, PriorityLevelDto,
   CreateTodoListCommand, UpdateTodoListCommand,
-  CreateTodoItemCommand, UpdateTodoItemDetailCommand
+  CreateTodoItemCommand, UpdateTodoItemDetailCommand, DeleteTodoListCommand
 } from '../web-api-client';
 import { TagListConfiguration, TagListModel, TagModel } from '../common/tag-list/tag-list.model';
 
@@ -38,6 +38,7 @@ export class TodoComponent implements OnInit {
     listId: [null],
     priority: [''],
     note: [''],
+    colour:[''],
     tags:['']
   });
   supportedColors : any;
@@ -54,14 +55,15 @@ export class TodoComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    
     this.getTodoList();
   }
 
   private getTodoList(){
     this.listsClient.get().subscribe(
       result => {
+        this.lists = result.lists?.filter(x=> x.deleted === null || x.deleted);
         
-        this.lists = result.lists;
         this.priorityLevels = result.priorityLevels;
         if (this.lists.length) {
           this.updateContent();
@@ -174,7 +176,12 @@ export class TodoComponent implements OnInit {
   }
 
   deleteListConfirmed(): void {
-    this.listsClient.delete(this.selectedList.id).subscribe(
+    debugger
+    const  list  = new DeleteTodoListCommand();
+    list.id = this.selectedList.id
+    list.deleted = false;
+
+    this.listsClient.delete(list.id, list).subscribe(
       () => {
         this.deleteListModalRef.hide();
         this.lists = this.lists.filter(t => t.id !== this.selectedList.id);
@@ -188,6 +195,7 @@ export class TodoComponent implements OnInit {
   showItemDetailsModal(template: TemplateRef<any>, item: TodoItemDto): void {
     
     this.selectedItem = item;
+    this.selectedColor = this.supportedColors?.find(x=> x.value == item?.colour) ?? this.supportedColors[0];
     this.itemDetailsFormGroup.patchValue(this.selectedItem);
 
     this.itemDetailsModalRef = this.modalService.show(template);
@@ -218,6 +226,7 @@ export class TodoComponent implements OnInit {
         this.selectedItem.priority = item.priority;
         this.selectedItem.note = item.note;
         this.selectedItem.tags = item.tags;
+        this.selectedItem.colour = item.colour;
         this.itemDetailsModalRef.hide();
         this.itemDetailsFormGroup.reset();
         this.mapTagstoVm();
@@ -228,8 +237,6 @@ export class TodoComponent implements OnInit {
 
   addItem() {
     
-   
-
     const item = {
       id: 0,
       listId: this.selectedList.id,
@@ -249,7 +256,6 @@ export class TodoComponent implements OnInit {
   }
 
   updateItem(item: TodoItemDto, pressedEnter: boolean = false): void {
-
     const isNewItem = item.id === 0;
 
     if (!item.title.trim()) {
@@ -283,6 +289,8 @@ export class TodoComponent implements OnInit {
   }
 
   deleteItem(item: TodoItemDto, countDown?: boolean) {
+    item.deleted = false;
+
     if (countDown) {
       if (this.deleting) {
         this.stopDeleteCountDown();
@@ -306,10 +314,14 @@ export class TodoComponent implements OnInit {
       const itemIndex = this.selectedList.items.indexOf(this.selectedItem);
       this.selectedList.items.splice(itemIndex, 1);
     } else {
-      this.itemsClient.delete(item.id).subscribe(
+      const content = new DeleteTodoListCommand();
+      content.id = this.selectedItem.id;
+      content.deleted = this.selectedItem.deleted;
+    
+      this.itemsClient.delete(content.id,content).subscribe(
         () =>
         (this.selectedList.items = this.selectedList.items.filter(
-          t => t.id !== item.id
+          t => t.id !== item.id && t.deleted != null && !t.deleted
         )),
         error => console.error(error)
       );
