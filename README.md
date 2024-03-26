@@ -1,6 +1,6 @@
 # Simple Todo Project
 
-This application is  based on the Clean Architecture Solution Template that uses .NET and Angular. In it, there is a simple Todo app that we wish you to add three features.
+This application is  based on the Clean Architecture Solution Template that uses .NET and Angular. In it, there is a simple Todo app that contains the following features 
 
 ## Feature 1
 - Users can change the background color for each Todo item.
